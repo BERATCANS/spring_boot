@@ -2,6 +2,7 @@ package com.beratcan.first_steps_on_kron.model;
 
 import lombok.Builder;
 import lombok.Data;
+
 import java.util.UUID;
 
 @Builder

@@ -15,6 +15,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/students")
 public class StudentController {
     private final StudentService studentService;
+
     @RequestMapping(method = RequestMethod.GET)
     public List<Student> listBeers(){
         return studentService.getAllStudents();
@@ -22,5 +23,9 @@ public class StudentController {
     @RequestMapping(value = "{beerId}", method = RequestMethod.GET)
     public Student getBeerById(@PathVariable("studentId") UUID studentId){
         return studentService.getStudentById(studentId);
+    }
+    @RequestMapping(method = RequestMethod.POST)
+    public void addStudent(Student student){
+        studentService.addStudent(student);
     }
 }

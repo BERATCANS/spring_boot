@@ -10,7 +10,7 @@ public class StudentServiceImpl implements StudentService {
     private Map<UUID, Student> studentMap;
     public StudentServiceImpl() {
         // Initialize the studentMap or any other necessary setup
-        this.studentMap = new HashMap<>(); // Example initialization, replace with actual logic
+        this.studentMap = new HashMap<>();
     }
     @Override
     public List<Student> getAllStudents() {
