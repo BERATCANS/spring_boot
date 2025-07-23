@@ -1,14 +1,27 @@
 package com.beratcan.first_steps_on_kron.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@Entity
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
+@Table(name = "students")
 public class Student {
+    @Column(name = "name")
     private String name;
+    @Column(name = "surname")
     private String surname;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+
 }

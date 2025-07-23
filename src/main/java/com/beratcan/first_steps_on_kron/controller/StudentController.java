@@ -20,12 +20,20 @@ public class StudentController {
     public List<Student> listBeers(){
         return studentService.getAllStudents();
     }
-    @RequestMapping(value = "{beerId}", method = RequestMethod.GET)
+    @RequestMapping(value = "{studentId}", method = RequestMethod.GET)
     public Student getBeerById(@PathVariable("studentId") UUID studentId){
         return studentService.getStudentById(studentId);
     }
     @RequestMapping(method = RequestMethod.POST)
     public void addStudent(Student student){
         studentService.addStudent(student);
+    }
+    @RequestMapping(value = "{studentId}", method = RequestMethod.PUT)
+    public Student updateStudent(@PathVariable("studentId") UUID studentId, Student updatedStudent){
+        return studentService.updateStudent(studentId, updatedStudent);
+    }
+    @RequestMapping(value = "{studentId}", method = RequestMethod.DELETE)
+    public boolean deleteStudent(@PathVariable("studentId") UUID studentId) {
+        return studentService.deleteStudent(studentId);
     }
 }

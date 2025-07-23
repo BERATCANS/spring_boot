@@ -11,4 +11,9 @@ public interface StudentService {
     void addStudent(Student student);
 
     Student getStudentById(UUID id);
+
+    Student updateStudent(UUID id, Student updatedStudent);
+
+    // Öğrenci sil
+    boolean deleteStudent(UUID id);
 }
