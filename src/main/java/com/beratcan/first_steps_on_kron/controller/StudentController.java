@@ -26,7 +26,7 @@ public class StudentController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void addStudent(Student student){
+    public void addStudent(@RequestBody Student student){
         studentService.addStudent(student);
     }
 

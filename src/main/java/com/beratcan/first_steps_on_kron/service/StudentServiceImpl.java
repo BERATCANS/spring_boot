@@ -21,8 +21,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void addStudent(Student student) {
-        if (student != null) {
+        if (student.getName() != null && student.getSurname() != null) {
             repository.save(student);
+        }
+        else {
+            throw new IllegalArgumentException("Student name and surname cannot be null");
         }
     }
 
