@@ -1,10 +1,9 @@
 package com.beratcan.first_steps_on_kron.controller;
+import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import com.beratcan.first_steps_on_kron.service.StudentService;
 
 import java.util.List;
@@ -20,20 +19,26 @@ public class StudentController {
     public List<Student> listBeers(){
         return studentService.getAllStudents();
     }
+
     @RequestMapping(value = "{studentId}", method = RequestMethod.GET)
-    public Student getBeerById(@PathVariable("studentId") UUID studentId){
+    public Student getStudentById(@PathVariable UUID studentId) throws ResourceNotFoundException {
         return studentService.getStudentById(studentId);
     }
+
     @RequestMapping(method = RequestMethod.POST)
     public void addStudent(Student student){
         studentService.addStudent(student);
     }
+
     @RequestMapping(value = "{studentId}", method = RequestMethod.PUT)
-    public Student updateStudent(@PathVariable("studentId") UUID studentId, Student updatedStudent){
-        return studentService.updateStudent(studentId, updatedStudent);
+    public ResponseEntity<Student> updateStudent(@PathVariable UUID studentId, @RequestBody Student updatedStudent) throws ResourceNotFoundException {
+        Student updated = studentService.updateStudent(studentId, updatedStudent);
+        return ResponseEntity.ok(updated);
     }
+
     @RequestMapping(value = "{studentId}", method = RequestMethod.DELETE)
-    public boolean deleteStudent(@PathVariable("studentId") UUID studentId) {
-        return studentService.deleteStudent(studentId);
+    public ResponseEntity<Object> deleteStudent(@PathVariable("studentId") UUID studentId) throws ResourceNotFoundException {
+        studentService.deleteStudent(studentId);
+        return ResponseEntity.noContent().build();
     }
 }

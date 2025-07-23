@@ -1,7 +1,9 @@
 package com.beratcan.first_steps_on_kron.service;
 
 import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
+import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,30 +27,27 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student getStudentById(UUID id) {
-        return repository.findById(id).orElse(null);
-    }
-
-    @Override
-    public Student updateStudent(UUID id, Student updatedStudent) {
+    public Student getStudentById(UUID id) throws ResourceNotFoundException {
         return repository.findById(id)
-                .map(student -> {
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
+    }
+    @Override
+    public Student updateStudent(UUID id, Student updatedStudent) throws ResourceNotFoundException {
+        Student student = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
 
-                    student.setName(updatedStudent.getName());
-                    student.setSurname(updatedStudent.getSurname());
+        student.setName(updatedStudent.getName());
+        student.setSurname(updatedStudent.getSurname());
 
-                    return repository.save(student);
-                })
-                .orElse(null);
+        return repository.save(student);
     }
 
-    // Öğrenci sil
     @Override
-    public boolean deleteStudent(UUID id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
+    public boolean deleteStudent(UUID id) throws ResourceNotFoundException {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Student not found with id: " + id);
         }
-        return false;
+        repository.deleteById(id);
+        return true;
     }
 }

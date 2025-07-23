@@ -1,0 +1,29 @@
+package com.beratcan.first_steps_on_kron.exception;
+
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ErrorDetails handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ErrorDetails.builder()
+                .message(ex.getMessage())
+                .details("The requested resource was not found.")
+                .timestamp(String.valueOf(System.currentTimeMillis()))
+                .status(404)
+                .error("Not Found")
+                .build();
+    }
+    @ExceptionHandler(Exception.class)
+    public ErrorDetails handleGlobalException(Exception ex) {
+        return ErrorDetails.builder()
+                .message(ex.getMessage())
+                .details("An unexpected error occurred.")
+                .timestamp(String.valueOf(System.currentTimeMillis()))
+                .status(500)
+                .error("Internal Server Error")
+                .build();
+    }
+
+}

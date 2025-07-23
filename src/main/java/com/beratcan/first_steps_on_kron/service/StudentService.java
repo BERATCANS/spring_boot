@@ -1,5 +1,6 @@
 package com.beratcan.first_steps_on_kron.service;
 
+import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
 
 import java.util.List;
@@ -10,10 +11,10 @@ public interface StudentService {
 
     void addStudent(Student student);
 
-    Student getStudentById(UUID id);
+    Student getStudentById(UUID id) throws ResourceNotFoundException;
 
-    Student updateStudent(UUID id, Student updatedStudent);
+    Student updateStudent(UUID id, Student updatedStudent) throws ResourceNotFoundException;
 
     // Öğrenci sil
-    boolean deleteStudent(UUID id);
+    boolean deleteStudent(UUID id) throws ResourceNotFoundException;
 }
