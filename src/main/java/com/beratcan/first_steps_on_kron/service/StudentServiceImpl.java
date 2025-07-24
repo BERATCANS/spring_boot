@@ -3,7 +3,6 @@ package com.beratcan.first_steps_on_kron.service;
 import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
