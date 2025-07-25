@@ -19,6 +19,8 @@ public class Student {
     private String name;
     @Column(name = "surname")
     private String surname;
+    @Column(name = "number")
+    private Integer number;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)

@@ -1,5 +1,7 @@
 package com.beratcan.first_steps_on_kron.exception;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -24,6 +26,18 @@ public class GlobalExceptionHandler {
                 .status(500)
                 .error("Internal Server Error")
                 .build();
+    }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorDetails> handleJsonParseError(HttpMessageNotReadableException ex) {
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .message(ex.getMessage())
+                .details("Please ensure that the JSON body is correctly formatted and contains valid integer values.")
+                .timestamp(String.valueOf(System.currentTimeMillis()))
+                .status(400)
+                .error("Bad Request")
+                .build();
+
+        return ResponseEntity.badRequest().body(errorDetails);
     }
 
 }

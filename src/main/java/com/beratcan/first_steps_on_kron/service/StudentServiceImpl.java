@@ -20,11 +20,19 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void addStudent(Student student) {
-        if (student.getName() != null && student.getSurname() != null) {
+
+        if (student.getName() != null && student.getSurname() != null && student.getNumber() != null) {
+
+
+            Optional<Student> existing = repository.findByNumber(student.getNumber());
+
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("Bu numara zaten kayıtlı: " + student.getNumber());
+            }
+
             repository.save(student);
-        }
-        else {
-            throw new IllegalArgumentException("Student name and surname cannot be null");
+        } else {
+            throw new IllegalArgumentException("Tüm alanlar dolu olmalı!");
         }
     }
 
@@ -37,11 +45,22 @@ public class StudentServiceImpl implements StudentService {
     public Student updateStudent(UUID id, Student updatedStudent) throws ResourceNotFoundException {
         Student student = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
+        if (updatedStudent.getName() != null && updatedStudent.getSurname() != null && updatedStudent.getNumber() != null) {
 
-        student.setName(updatedStudent.getName());
-        student.setSurname(updatedStudent.getSurname());
+            Optional<Student> existing = repository.findByNumber(updatedStudent.getNumber());
 
-        return repository.save(student);
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("Bu numara zaten kayıtlı: " + student.getNumber());
+            }
+            student.setNumber(updatedStudent.getNumber());
+            student.setName(updatedStudent.getName());
+            student.setSurname(updatedStudent.getSurname());
+
+            return repository.save(student);
+        }
+        else {
+            throw new IllegalArgumentException("Tüm alanlar dolu olmalı!");
+        }
     }
 
     @Override
