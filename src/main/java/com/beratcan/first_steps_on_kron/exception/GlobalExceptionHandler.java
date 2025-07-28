@@ -1,5 +1,6 @@
 package com.beratcan.first_steps_on_kron.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,18 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.badRequest().body(errorDetails);
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorDetails> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .message(ex.getMessage())
+                .details("Validation error")
+                .timestamp(String.valueOf(System.currentTimeMillis()))
+                .status(HttpStatus.BAD_REQUEST.value())  // 400 Bad Request
+                .error("Bad Request")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
     }
 
 }

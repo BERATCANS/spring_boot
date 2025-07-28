@@ -1,22 +1,18 @@
-import React, { Component } from 'react';
-import './App.css';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Home from './Home';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import StudentList from './StudentList';
-import StudentEdit from "./StudentEdit";
+import StudentEdit from './StudentEdit';
 
-class App extends Component {
-    render() {
-        return (
-            <Router>
-                <Switch>
-                    <Route path='/' exact={true} component={Home}/>
-                    <Route path='/students' exact={true} component={StudentList}/>
-                    <Route path='/students/:id' component={StudentEdit}/>
-                </Switch>
-            </Router>
-        )
-    }
+function App() {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/students" element={<StudentList />} />
+            <Route path="/students/:id" element={<StudentEdit />} />
+        </Routes>
+    );
 }
 
 export default App;
+// This code defines the main application component for a React application.

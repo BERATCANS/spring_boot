@@ -27,12 +27,12 @@ public class StudentServiceImpl implements StudentService {
             Optional<Student> existing = repository.findByNumber(student.getNumber());
 
             if (existing.isPresent()) {
-                throw new IllegalArgumentException("Bu numara zaten kayıtlı: " + student.getNumber());
+                throw new IllegalArgumentException("This number is already registered: " + student.getNumber());
             }
 
             repository.save(student);
         } else {
-            throw new IllegalArgumentException("Tüm alanlar dolu olmalı!");
+            throw new IllegalArgumentException("All spaces must be filled!");
         }
     }
 
@@ -49,8 +49,8 @@ public class StudentServiceImpl implements StudentService {
 
             Optional<Student> existing = repository.findByNumber(updatedStudent.getNumber());
 
-            if (existing.isPresent()) {
-                throw new IllegalArgumentException("Bu numara zaten kayıtlı: " + student.getNumber());
+            if (existing.isPresent() && !existing.get().getId().equals(student.getId())) {
+                throw new IllegalArgumentException("This number is already registered: " + updatedStudent.getNumber());
             }
             student.setNumber(updatedStudent.getNumber());
             student.setName(updatedStudent.getName());
@@ -59,7 +59,7 @@ public class StudentServiceImpl implements StudentService {
             return repository.save(student);
         }
         else {
-            throw new IllegalArgumentException("Tüm alanlar dolu olmalı!");
+            throw new IllegalArgumentException("All spaces must be filled!");
         }
     }
 
@@ -71,4 +71,27 @@ public class StudentServiceImpl implements StudentService {
         repository.deleteById(id);
         return true;
     }
+    @Override
+    public List<Student> searchStudents(String query) {
+        if (query == null || query.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Student> result = new ArrayList<>();
+
+        result.addAll(repository.searchByNameOrSurname(query.toLowerCase()));
+
+        try {
+            Integer numberQuery = Integer.valueOf(query);
+            List<Student> numberMatches = repository.findAllByNumber(query);
+
+            Set<Student> resultSet = new HashSet<>(result);
+            resultSet.addAll(numberMatches);
+            result = new ArrayList<>(resultSet);
+        } catch (NumberFormatException e) {
+
+        }
+
+        return result;
+    }
+
 }

@@ -1,84 +1,121 @@
-import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { Button, Container, Form, FormGroup, Input, Label } from 'reactstrap';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Container, Form, Toast, ToastContainer } from 'react-bootstrap';
 import AppNavbar from './AppNavbar';
 
-class StudentEdit extends Component {
-
-    emptyItem = {
+function StudentEdit() {
+    const emptyItem = {
         name: '',
         surname: '',
-        number:''
+        number: ''
     };
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            item: this.emptyItem
-        };
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-    }
+    const [item, setItem] = useState(emptyItem);
+    const [error, setError] = useState('');
+    const [showToast, setShowToast] = useState(false);
 
-    async componentDidMount() {
-        if (this.props.match.params.id !== 'new') {
-            const student = await (await fetch(`/api/v1/students/${this.props.match.params.id}`)).json();
-            this.setState({item: student});
+    const navigate = useNavigate();
+    const { id } = useParams();
+
+    useEffect(() => {
+        if (id !== 'new') {
+            fetch(`/api/v1/students/${id}`)
+                .then(response => response.json())
+                .then(data => setItem(data));
         }
-    }
-    handleChange(event) {
-        const target = event.target;
-        const value = target.value;
-        const name = target.name;
-        let item = {...this.state.item};
-        item[name] = value;
-        this.setState({item});
-    }
-    async handleSubmit(event) {
+    }, [id]);
+
+    const handleChange = event => {
+        const { name, value } = event.target;
+        setItem({ ...item, [name]: value });
+    };
+
+    const handleSubmit = async event => {
         event.preventDefault();
-        const {item} = this.state;
 
-        await fetch('/api/v1/students' + (item.id ? '/' + item.id : ''), {
-            method: (item.id) ? 'PUT' : 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(item)
-        });
-        this.props.history.push('/students');
-    }
-    render() {
-        const {item} = this.state;
-        const title = <h2>{item.id ? 'Edit Student' : 'Add Student'}</h2>;
+        try {
+            const response = await fetch('/api/v1/students' + (item.id ? `/${item.id}` : ''), {
+                method: item.id ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(item)
+            });
 
-        return <div>
-            <AppNavbar/>
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Unknown error');
+            }
+
+            // Başarılıysa listeye dön
+            navigate('/students');
+
+        } catch (err) {
+            // Hata mesajını state'e koy ve toast'u göster
+            setError(err.message);
+            setShowToast(true);
+        }
+    };
+
+    const title = <h2>{item.id ? 'Edit Student' : 'Add Student'}</h2>;
+
+    return (
+        <div>
+            <AppNavbar />
             <Container>
                 {title}
-                <Form onSubmit={this.handleSubmit}>
-                    <FormGroup>
-                        <Label for="name">Name</Label>
-                        <Input type="text" name="name" id="name" value={item.name || ''}
-                               onChange={this.handleChange} autoComplete="name"/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="surname">Surname</Label>
-                        <Input type="text" name="surname" id="surname" value={item.surname || ''}
-                               onChange={this.handleChange} autoComplete="surname"/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="number">Number</Label>
-                        <Input type="text" name="number" id="number" value={item.number || ''}
-                               onChange={this.handleChange} autoComplete="number"/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Button color="primary" type="submit">Save</Button>{' '}
-                        <Button color="secondary" tag={Link} to="/students">Cancel</Button>
-                    </FormGroup>
+                <Form onSubmit={handleSubmit}>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Name</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="name"
+                            value={item.name}
+                            onChange={handleChange}
+                            placeholder="Enter name"
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Surname</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="surname"
+                            value={item.surname}
+                            onChange={handleChange}
+                            placeholder="Enter surname"
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Number</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="number"
+                            value={item.number}
+                            onChange={handleChange}
+                            placeholder="Enter number"
+                        />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">Submit</Button>
                 </Form>
+
+                {/* Toast gösterimi */}
+                <ToastContainer position="top-end" className="p-3">
+                    <Toast
+                        bg="danger"
+                        onClose={() => setShowToast(false)}
+                        show={showToast}
+                        delay={4000}
+                        autohide
+                    >
+                        <Toast.Header>
+                            <strong className="me-auto">Error</strong>
+                        </Toast.Header>
+                        <Toast.Body className="text-white">{error}</Toast.Body>
+                    </Toast>
+                </ToastContainer>
             </Container>
         </div>
-    }
+    );
 }
-export default withRouter(StudentEdit);
+
+export default StudentEdit;

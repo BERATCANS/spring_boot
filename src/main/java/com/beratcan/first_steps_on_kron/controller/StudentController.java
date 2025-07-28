@@ -42,4 +42,8 @@ public class StudentController {
         studentService.deleteStudent(studentId);
         return ResponseEntity.noContent().build();
     }
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public List<Student> searchStudents(@RequestParam("query") String query) {
+        return studentService.searchStudents(query);
+    }
 }
