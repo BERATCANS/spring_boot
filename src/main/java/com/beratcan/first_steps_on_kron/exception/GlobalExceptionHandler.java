@@ -52,5 +52,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
     }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorDetails> handleUnauthorized(UnauthorizedException ex) {
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .message(ex.getMessage())
+                .details("User authentication failed.")
+                .timestamp(String.valueOf(System.currentTimeMillis()))
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unauthorized")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+    }
+
 
 }

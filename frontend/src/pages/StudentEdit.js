@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Form, Toast, ToastContainer } from 'react-bootstrap';
-import AppNavbar from './AppNavbar';
+import AppNavbar from '../components/AppNavbar';
 
 function StudentEdit() {
     const emptyItem = {

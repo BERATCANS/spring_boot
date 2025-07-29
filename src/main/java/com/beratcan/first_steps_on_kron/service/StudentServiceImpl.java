@@ -22,8 +22,6 @@ public class StudentServiceImpl implements StudentService {
     public void addStudent(Student student) {
 
         if (student.getName() != null && student.getSurname() != null && student.getNumber() != null) {
-
-
             Optional<Student> existing = repository.findByNumber(student.getNumber());
 
             if (existing.isPresent()) {

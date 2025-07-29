@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Button, ButtonGroup, Container, Table } from 'react-bootstrap';
-import AppNavbar from './AppNavbar';
+import AppNavbar from '../components/AppNavbar';
 import { Link } from 'react-router-dom';
-import StudentSearchBar from "./StudentSearchBar";
+import StudentSearchBar from "../components/StudentSearchBar";
 
 class StudentList extends Component {
 

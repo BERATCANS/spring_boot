@@ -1,41 +1,30 @@
 package com.beratcan.first_steps_on_kron.controller;
 
-import com.beratcan.first_steps_on_kron.Repository.UserRepository;
 import com.beratcan.first_steps_on_kron.model.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.beratcan.first_steps_on_kron.service.UserService;
 
-@Controller
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController {
-
-    private final UserRepository userRepo;
-    private final PasswordEncoder encoder;
-
-    public UserController(UserRepository userRepo, PasswordEncoder encoder) {
-        this.userRepo = userRepo;
-        this.encoder = encoder;
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login"; // templates/login.html
-    }
-
-    @GetMapping("/register")
-    public String registerForm() {
-        return "register";
-    }
+    private final UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestParam String username, @RequestParam String password) {
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(encoder.encode(password));
-        userRepo.save(user);
-        return "redirect:/login";
+    public ResponseEntity<?> register(@RequestBody User user,@RequestParam(required = false, defaultValue = "false") boolean isAdmin) {
+        userService.register(user, isAdmin);
+        return ResponseEntity.ok("User registered successfully");
+    }
+    @GetMapping("/current")
+    public ResponseEntity<User> getCurrentUser(@RequestParam String username) {
+        User user = (User) userService.loadUserByUsername(username);
+        return ResponseEntity.ok(user);
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User loginUser) {
+        return userService.login(loginUser);
     }
 }
 

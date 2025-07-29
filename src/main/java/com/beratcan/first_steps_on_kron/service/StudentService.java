@@ -15,7 +15,6 @@ public interface StudentService {
 
     Student updateStudent(UUID id, Student updatedStudent) throws ResourceNotFoundException;
 
-    // Öğrenci sil
     boolean deleteStudent(UUID id) throws ResourceNotFoundException;
     List<Student> searchStudents(String query);
 }
