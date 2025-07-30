@@ -47,11 +47,9 @@ function StudentEdit() {
                 throw new Error(errorData.message || 'Unknown error');
             }
 
-            // Başarılıysa listeye dön
             navigate('/students');
 
         } catch (err) {
-            // Hata mesajını state'e koy ve toast'u göster
             setError(err.message);
             setShowToast(true);
         }

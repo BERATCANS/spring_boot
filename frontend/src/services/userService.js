@@ -2,6 +2,7 @@ export async function login(username, password) {
     const response = await fetch("/api/v1/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password })
     });
 
@@ -10,7 +11,7 @@ export async function login(username, password) {
         throw new Error(error.message || "Login failed");
     }
 
-    return response.json(); // { message: "...", role: "..." }
+    return response.json();
 }
 
 export async function register(username, password, isAdmin) {
@@ -19,6 +20,7 @@ export async function register(username, password, isAdmin) {
     const response = await fetch(`/api/v1/users/register?${params}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password })
     });
 

@@ -8,7 +8,9 @@ class StudentList extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {students: []};
+        this.state = {students: [],
+        role: localStorage.getItem("role")
+        };
         this.remove = this.remove.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
     }
@@ -29,7 +31,9 @@ class StudentList extends Component {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
+
         }).then(() => {
             let updatedStudents = [...this.state.students].filter(i => i.id !== id);
             this.setState({students: updatedStudents});
@@ -40,7 +44,6 @@ class StudentList extends Component {
             this.fetchAll();
             return;
         }
-
         try {
             const response = await fetch(`/api/v1/students/search?query=${encodeURIComponent(query)}`);
             if (!response.ok) throw new Error('Search failed');
@@ -53,8 +56,7 @@ class StudentList extends Component {
 
 
     render() {
-        const {students} = this.state;
-
+        const {students, role} = this.state;
 
         const studentList = students.map(student => {
             return <tr key={student.id}>
@@ -62,10 +64,12 @@ class StudentList extends Component {
                 <td>{student.surname}</td>
                 <td>{student.number}</td>
                 <td>
+                    {role === "ROLE_ADMIN" &&(
                     <ButtonGroup>
                         <Button size="sm" color="primary" as={Link} to={"/students/" + student.id}>Edit</Button>
                         <Button size="sm" color="danger" onClick={() => this.remove(student.id)}>Delete</Button>
                     </ButtonGroup>
+                        )}
                 </td>
             </tr>
         });
@@ -76,10 +80,11 @@ class StudentList extends Component {
                 <Container fluid className="mt-3">
                     {/* ÜST ALAN */}
                 <div className="d-flex justify-content-between align-items-center mb-5 flex-wrap">
+                    {role === "ROLE_ADMIN" && (
                     <div>
                         <Button variant="success" as={Link} to="/students/new">Add Student</Button>
                     </div>
-
+                        )}
                     <div className="d-flex align-items-center mx-auto" style={{ maxWidth: '600px', flexGrow: 1, justifyContent: 'center' }}>
                         <StudentSearchBar onSearch={this.handleSearch} />
                     </div>

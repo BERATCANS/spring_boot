@@ -11,6 +11,7 @@ function Home() {
         try {
             const result = await login(username, password);
             localStorage.setItem("role", result.role);
+            navigate("/students");
         } catch (err) {
             alert(err.message);
         }

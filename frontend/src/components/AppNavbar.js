@@ -24,7 +24,7 @@ export default class AppNavbar extends Component {
                         {role === "ROLE_ADMIN" && (
                             <Nav.Link as={Link} to="/register">Register</Nav.Link>
                         )}
-                        <Nav.Link as={Link} to="/logout">Logout</Nav.Link>
+                        <Nav.Link as={Link} to="/">Logout</Nav.Link>
                     </Nav>
                 </Container>
             </Navbar>
