@@ -19,4 +19,8 @@ public interface StudentService {
 
     boolean deleteStudent(UUID id) throws ResourceNotFoundException;
     List<Student> searchStudents(String query);
+
+    @Transactional
+    @Scheduled(fixedRate = 60000*5)
+    void importCsv();
 }

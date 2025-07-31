@@ -1,27 +1,36 @@
 package com.beratcan.first_steps_on_kron.service;
 
+import com.beratcan.first_steps_on_kron.Repository.CsvFilesRepository;
 import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
+import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
+import com.beratcan.first_steps_on_kron.model.User;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import org.slf4j.Logger;
 import java.util.stream.Stream;
+
+
 
 @Service
 @AllArgsConstructor
 public class StudentServiceImpl implements StudentService {
     private StudentRepository repository;
+    private CsvFilesRepository csvFilesRepository;
 
     @Override
     public List<Student> getAllStudents() {
@@ -101,5 +110,78 @@ public class StudentServiceImpl implements StudentService {
 
         return result;
     }
+    @Override
+    @Transactional
+    @Scheduled(fixedRate = 60000)
+    public void importCsv() {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
 
+        try (Stream<Path> paths = Files.walk(Paths.get("src/main/resources/csvfiles"))) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".csv"))
+                    .forEach(path -> {
+                        CsvFile csvFile = CsvFile.builder().fileName(path.getFileName().toString()).build();
+                        boolean success = true;
+                        StringBuilder errorMessages = new StringBuilder();
+
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(path)))) {
+                            String line;
+                            line = br.readLine();
+                            String[] record = line.split(";");
+                            String name = record[0].trim().toLowerCase();
+                            String surname = record[1].trim().toLowerCase();
+                            String number = record[2].trim().toLowerCase();
+
+                            if (!("name".equals(name) && "surname".equals(surname) && "number".equals(number))) {
+                                errorMessages.append("Headers are not valid. ");
+                                throw new Exception("Headers are not valid.");
+                            }
+                            int a = 0;
+                            while ((line = br.readLine()) != null) {
+                                record = line.split(";");
+                                a++;
+                                try {
+                                    name = record[0].trim();
+                                    surname = record[1].trim();
+                                    number = record[2].trim();
+                                    Integer num = Integer.valueOf(number);
+
+                                    Student student = new Student(name, surname, num);
+                                    addStudent(student);
+
+                                } catch (IllegalArgumentException e) {
+                                    errorMessages.append("Error on line ").append(a).append(": ").append(e.getMessage()).append(". ");
+                                    success = false;
+                                    break;
+                                } catch (Exception e) {
+                                    errorMessages.append("Error processing line: ").append(a).append(" ").append(line).append(". ");
+                                    success = false;
+                                    break;
+                                }
+                            }
+
+                        } catch (Exception e) {
+                            if (errorMessages.isEmpty()) {
+                                errorMessages.append("An error occurred during processing. ");
+                            }
+                            success = false;
+                        }
+                        if(errorMessages.isEmpty()){
+                            errorMessages.append("File processed successfully. ");
+                        }
+                        csvFile.setIsValid(success);
+                        csvFile.setErrorMessage(errorMessages.toString());
+                        csvFilesRepository.save(csvFile);
+
+                        try {
+                            Path newPath = success ? Paths.get(path.toString() + ".done") : Paths.get(path.toString() + ".fail");
+                            Files.move(path, newPath);
+                        } catch (IOException e) {
+                            logger.error("File could not be renamed: " + path, e);
+                        }
+                    });
+        } catch (IOException e) {
+            logger.error("Directory read error: ", e);
+        }
+    }
 }
