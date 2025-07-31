@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Form, Toast, ToastContainer } from 'react-bootstrap';
 import AppNavbar from '../components/AppNavbar';
+import {getStudentById, saveStudent} from "../services/studentService";
 
 function StudentEdit() {
     const emptyItem = {
@@ -19,9 +20,12 @@ function StudentEdit() {
 
     useEffect(() => {
         if (id !== 'new') {
-            fetch(`/api/v1/students/${id}`)
-                .then(response => response.json())
-                .then(data => setItem(data));
+            getStudentById(id)
+                .then(data => setItem(data))
+                .catch(err => {
+                    setError(err.message);
+                    setShowToast(true);
+                });
         }
     }, [id]);
 
@@ -32,23 +36,9 @@ function StudentEdit() {
 
     const handleSubmit = async event => {
         event.preventDefault();
-
         try {
-            const response = await fetch('/api/v1/students' + (item.id ? `/${item.id}` : ''), {
-                method: item.id ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(item)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Unknown error');
-            }
-
+            await saveStudent(item);
             navigate('/students');
-
         } catch (err) {
             setError(err.message);
             setShowToast(true);

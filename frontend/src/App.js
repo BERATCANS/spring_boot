@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import {Routes, Route, Navigate} from 'react-router-dom';
 import Home from './pages/Home';
 import StudentList from './pages/StudentList';
 import StudentEdit from './pages/StudentEdit';
@@ -10,8 +10,8 @@ import RequireAuth from "./components/RequireAuth";
 function App() {
     return (
         <Routes>
-            <Route path="/" element={<Home />} />
-
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Home />} />
             <Route path="/students" element={
                 <RequireAuth>
                     <StudentList />

@@ -4,7 +4,7 @@ function RequireAuth({ children }) {
     const role = localStorage.getItem("role");
 
     if (!role) {
-        return <Navigate to="/" />;
+        return <Navigate to="/login" />;
     }
 
     return children;

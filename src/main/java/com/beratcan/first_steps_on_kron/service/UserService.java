@@ -52,6 +52,5 @@ public class UserService implements UserDetailsService {
                 "role", role
         ));
     }
-
 }
 
