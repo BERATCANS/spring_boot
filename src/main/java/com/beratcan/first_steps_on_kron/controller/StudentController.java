@@ -17,7 +17,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Student> listBeers(){
+    public List<Student> listStudents(){
         return studentService.getAllStudents();
     }
 
@@ -28,6 +28,8 @@ public class StudentController {
 
     @RequestMapping(method = RequestMethod.POST)
     public void addStudent(@RequestBody Student student){
+        student.setAccepted(true);
+        student.setView(true);
         studentService.addStudent(student);
     }
 
@@ -45,5 +47,9 @@ public class StudentController {
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public List<Student> searchStudents(@RequestParam("query") String query) {
         return studentService.searchStudents(query);
+    }
+    @RequestMapping(value = "/accepting", method = RequestMethod.GET)
+    public List<Student> getAcceptingStudents() {
+        return studentService.getAcceptingStudents();
     }
 }

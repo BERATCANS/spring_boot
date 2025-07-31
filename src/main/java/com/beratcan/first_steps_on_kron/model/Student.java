@@ -25,11 +25,17 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+    @Column(name = "view")
+    private boolean view;
+    @Column(name = "accepted")
+    private boolean accepted;
 
-
-    public Student(String name, String surname, Integer number) {
+    public Student(String name, String surname, Integer number,boolean accepted, boolean view) {
         this.name = name;
         this.surname = surname;
         this.number = number;
+        this.accepted = accepted;
+        this.view = view;
+        this.id = UUID.randomUUID();
     }
 }

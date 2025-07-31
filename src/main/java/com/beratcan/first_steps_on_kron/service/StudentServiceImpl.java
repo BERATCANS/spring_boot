@@ -5,9 +5,6 @@ import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
-import com.beratcan.first_steps_on_kron.model.User;
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.LoggerFactory;
@@ -34,7 +31,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<Student> getAllStudents() {
-        return repository.findAll();
+        return repository.findAllByViewTrue();
     }
 
     @Override
@@ -146,7 +143,7 @@ public class StudentServiceImpl implements StudentService {
                                     number = record[2].trim();
                                     Integer num = Integer.valueOf(number);
 
-                                    Student student = new Student(name, surname, num);
+                                    Student student = new Student(name, surname, num,false,true);
                                     addStudent(student);
 
                                 } catch (IllegalArgumentException e) {
@@ -183,5 +180,9 @@ public class StudentServiceImpl implements StudentService {
         } catch (IOException e) {
             logger.error("Directory read error: ", e);
         }
+    }
+    @Override
+    public List<Student> getAcceptingStudents() {
+        return repository.findAllByAcceptedFalse();
     }
 }

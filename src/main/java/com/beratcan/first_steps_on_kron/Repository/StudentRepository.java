@@ -18,4 +18,8 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     @Query("SELECT s FROM Student s WHERE CAST(s.number AS string) LIKE %:numberStr%")
     List<Student> findAllByNumber(@Param("numberStr") String numberStr);
+    @Query("SELECT s FROM Student s WHERE s.accepted = false AND s.view = true")
+    List<Student> findAllByAcceptedFalse();
+    @Query("SELECT s FROM Student s WHERE s.accepted = true AND s.view = true")
+    List<Student> findAllByViewTrue();
 }

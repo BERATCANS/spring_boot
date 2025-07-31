@@ -23,4 +23,5 @@ public interface StudentService {
     @Transactional
     @Scheduled(fixedRate = 60000*5)
     void importCsv();
+    List<Student> getAcceptingStudents();
 }
