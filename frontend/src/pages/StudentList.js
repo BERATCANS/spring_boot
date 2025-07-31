@@ -3,6 +3,7 @@ import { Button, ButtonGroup, Container, Table } from 'react-bootstrap';
 import AppNavbar from '../components/AppNavbar';
 import { Link } from 'react-router-dom';
 import StudentSearchBar from "../components/StudentSearchBar";
+import { fetchAllStudents, deleteStudent, searchStudents } from '../services/studentService';
 
 class StudentList extends Component {
 
@@ -14,45 +15,40 @@ class StudentList extends Component {
         this.remove = this.remove.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
     }
-    fetchAll() {
-        fetch('api/v1/students')
-            .then(response => response.json())
-            .then(data => this.setState({students: data}));
-    }
     componentDidMount() {
-        fetch('api/v1/students')
-            .then(response => response.json())
-            .then(data => this.setState({students: data}));
+        fetchAllStudents()
+            .then(data => this.setState({ students: data }))
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+    fetchAll() {
+        fetchAllStudents()
+            .then(data => this.setState({ students: data }))
+            .catch(error => console.error('Fetch error:', error));
     }
 
     async remove(id) {
-        await fetch(`api/v1/students/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-
-        }).then(() => {
-            let updatedStudents = [...this.state.students].filter(i => i.id !== id);
-            this.setState({students: updatedStudents});
-        });
+        try {
+            await deleteStudent(id);
+            const updatedStudents = this.state.students.filter(s => s.id !== id);
+            this.setState({ students: updatedStudents });
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
     }
+
     handleSearch = async (query) => {
         if (!query) {
             this.fetchAll();
             return;
         }
         try {
-            const response = await fetch(`/api/v1/students/search?query=${encodeURIComponent(query)}`);
-            if (!response.ok) throw new Error('Search failed');
-            const data = await response.json();
+            const data = await searchStudents(query);
             this.setState({ students: data });
         } catch (error) {
-            console.error('Error searching:', error);
+            console.error('Search error:', error);
         }
-    };
+    }
 
 
     render() {
@@ -98,7 +94,11 @@ class StudentList extends Component {
                         <th width="20%">Name</th>
                         <th width="20%">Surname</th>
                         <th width="20%">Number</th>
-                        <th width="40%">Actions</th>
+                        {role === "ROLE_ADMIN" ? (
+                            <th width="40%">Actions</th>
+                        ) : (
+                            <th width="40%" colSpan="2"></th> // Boş başlık yerine colspan kullanın
+                        )}
                     </tr>
                     </thead>
                     <tbody>{studentList}</tbody>

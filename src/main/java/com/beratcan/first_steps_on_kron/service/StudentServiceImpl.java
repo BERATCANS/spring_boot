@@ -3,10 +3,20 @@ package com.beratcan.first_steps_on_kron.service;
 import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor

@@ -31,3 +31,18 @@ export async function register(username, password, isAdmin) {
 
     return response.json(); // Optional, if your backend returns anything
 }
+
+export async function logout() {
+    const response = await fetch("/api/v1/users/logout", {
+        method: "POST",
+        credentials: "include"
+    });
+
+    if (!response.ok) {
+        const error = await response.text(); // logout genelde text döner
+        throw new Error(error || "Logout failed");
+    }
+
+    return response.text(); // "Logout successful" gibi bir yanıt bekleniyor
+}
+

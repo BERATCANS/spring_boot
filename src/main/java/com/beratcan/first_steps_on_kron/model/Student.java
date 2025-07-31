@@ -25,5 +25,9 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
-
+    public Student(String name, String surname, Integer number) {
+        this.name = name;
+        this.surname = surname;
+        this.number = number;
+    }
 }

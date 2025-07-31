@@ -2,6 +2,8 @@ package com.beratcan.first_steps_on_kron.service;
 
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
+import jakarta.transaction.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 import java.util.UUID;
