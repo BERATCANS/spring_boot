@@ -54,3 +54,41 @@ export async function saveStudent(student) {
         throw new Error(errorData.message || 'Unknown error occurred');
     }
 }
+
+export async function fetchConfirmingStudents() {
+    const response = await fetch(`${BASE_URL}/accepting`, {
+        method: 'GET',
+        credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to fetch accepting students.');
+    return await response.json();
+}
+
+export async function acceptStudent(studentId) {
+    const response = await fetch(`${BASE_URL}/${studentId}/accept`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'accepted' }),
+        credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Failed to accept student');
+}
+
+export async function rejectStudent(studentId) {
+    const response = await fetch(`${BASE_URL}/${studentId}/reject`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'rejected' }),
+        credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Failed to reject student');
+}
+

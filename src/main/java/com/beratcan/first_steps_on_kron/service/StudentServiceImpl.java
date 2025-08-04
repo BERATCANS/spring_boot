@@ -5,22 +5,28 @@ import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import org.slf4j.Logger;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 
 @Service
@@ -28,6 +34,7 @@ import java.util.stream.Stream;
 public class StudentServiceImpl implements StudentService {
     private StudentRepository repository;
     private CsvFilesRepository csvFilesRepository;
+    private final CsvFileService csvFileService;
 
     @Override
     public List<Student> getAllStudents() {
@@ -87,6 +94,7 @@ public class StudentServiceImpl implements StudentService {
     }
     @Override
     public List<Student> searchStudents(String query) {
+        // Dummy call to avoid unused method warning
         if (query == null || query.isEmpty()) {
             return Collections.emptyList();
         }
@@ -108,81 +116,107 @@ public class StudentServiceImpl implements StudentService {
         return result;
     }
     @Override
-    @Transactional
     @Scheduled(fixedRate = 60000)
     public void importCsv() {
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
         try (Stream<Path> paths = Files.walk(Paths.get("src/main/resources/csvfiles"))) {
             paths.filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".csv"))
-                    .forEach(path -> {
-                        CsvFile csvFile = CsvFile.builder().fileName(path.getFileName().toString()).build();
-                        boolean success = true;
-                        StringBuilder errorMessages = new StringBuilder();
-
-                        try (BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(path)))) {
-                            String line;
-                            line = br.readLine();
-                            String[] record = line.split(";");
-                            String name = record[0].trim().toLowerCase();
-                            String surname = record[1].trim().toLowerCase();
-                            String number = record[2].trim().toLowerCase();
-
-                            if (!("name".equals(name) && "surname".equals(surname) && "number".equals(number))) {
-                                errorMessages.append("Headers are not valid. ");
-                                throw new Exception("Headers are not valid.");
-                            }
-                            int a = 0;
-                            while ((line = br.readLine()) != null) {
-                                record = line.split(";");
-                                a++;
-                                try {
-                                    name = record[0].trim();
-                                    surname = record[1].trim();
-                                    number = record[2].trim();
-                                    Integer num = Integer.valueOf(number);
-
-                                    Student student = new Student(name, surname, num,false,true);
-                                    addStudent(student);
-
-                                } catch (IllegalArgumentException e) {
-                                    errorMessages.append("Error on line ").append(a).append(": ").append(e.getMessage()).append(". ");
-                                    success = false;
-                                    break;
-                                } catch (Exception e) {
-                                    errorMessages.append("Error processing line: ").append(a).append(" ").append(line).append(". ");
-                                    success = false;
-                                    break;
-                                }
-                            }
-
-                        } catch (Exception e) {
-                            if (errorMessages.isEmpty()) {
-                                errorMessages.append("An error occurred during processing. ");
-                            }
-                            success = false;
-                        }
-                        if(errorMessages.isEmpty()){
-                            errorMessages.append("File processed successfully. ");
-                        }
-                        csvFile.setIsValid(success);
-                        csvFile.setErrorMessage(errorMessages.toString());
-                        csvFilesRepository.save(csvFile);
-
-                        try {
-                            Path newPath = success ? Paths.get(path.toString() + ".done") : Paths.get(path.toString() + ".fail");
-                            Files.move(path, newPath);
-                        } catch (IOException e) {
-                            logger.error("File could not be renamed: " + path, e);
-                        }
-                    });
+                    .filter(path -> !path.toString().endsWith(".done") && !path.toString().endsWith(".fail"))
+                    .forEach(path -> executor.submit(() -> processFile(path)));
         } catch (IOException e) {
             logger.error("Directory read error: ", e);
+        }
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
+                logger.warn("CSV processing timed out.");
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            logger.error("CSV processing interrupted", e);
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public void processFile(Path path) {
+        CsvFile csvFile = CsvFile.builder().fileName(path.getFileName().toString()).build();
+
+        if (isFileValid(path, csvFile)) {
+            try {
+                csvFileService.readStudentsFromCsv(path, csvFile);
+            }
+            catch(RuntimeException e){
+                csvFile.setIsValid(false);
+                csvFile.setErrorMessage(e.getMessage());
+            }
+            if (csvFile.getIsValid()) {
+                csvFile.setErrorMessage("File processed successfully.");
+            }
+        }
+        saveCSVFile(csvFile);
+        renameProcessedFile(path, csvFile.getIsValid());
+    }
+
+    private boolean isFileValid(Path path, CsvFile csvFile) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(path)))) {
+            String line = br.readLine();
+            String[] headers = line.split(";");
+            csvFile.setIsValid(true);
+
+            if (!("name".equalsIgnoreCase(headers[0].trim())
+                    && "surname".equalsIgnoreCase(headers[1].trim())
+                    && "number".equalsIgnoreCase(headers[2].trim()))) {
+                csvFile.setIsValid(false);
+                csvFile.setErrorMessage("Headers are not valid.");
+                return false;
+            }
+        } catch (Exception e) {
+            csvFile.setIsValid(false);
+            csvFile.setErrorMessage("An error occurred during header validation.");
+            return false;
+        }
+        return true;
+    }
+
+    @Transactional(propagation = REQUIRES_NEW)
+    public void saveCSVFile(CsvFile csvFile) {
+        csvFilesRepository.save(csvFile);
+    }
+
+
+    private void renameProcessedFile(Path path, boolean isSuccess) {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+        try {
+            Path newPath = isSuccess ? Paths.get(path.toString() + ".done") : Paths.get(path.toString() + ".fail");
+            Files.move(path, newPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.error("File could not be renamed: " + path, e);
         }
     }
     @Override
     public List<Student> getAcceptingStudents() {
         return repository.findAllByAcceptedFalse();
+    }
+    @Override
+    public Student acceptStudent(UUID studentId) throws ResourceNotFoundException {
+        Student student = repository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        student.setAccepted(true);
+        return repository.save(student);
+    }
+    @Override
+    public Student rejectStudent(UUID studentId) throws ResourceNotFoundException {
+        Student student = repository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        student.setView(false);
+        return repository.save(student);
     }
 }

@@ -1,10 +1,12 @@
 package com.beratcan.first_steps_on_kron.service;
 
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
+import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,4 +26,6 @@ public interface StudentService {
     @Scheduled(fixedRate = 60000*5)
     void importCsv();
     List<Student> getAcceptingStudents();
+    Student acceptStudent(UUID id) throws ResourceNotFoundException;
+    Student rejectStudent(UUID id) throws ResourceNotFoundException;
 }

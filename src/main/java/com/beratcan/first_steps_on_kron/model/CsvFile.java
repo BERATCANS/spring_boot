@@ -20,6 +20,6 @@ public class CsvFile {
     String fileName;
     @Column(name = "is_valid")
     Boolean isValid;
-    @Column(name = "Message")
+    @Column(name = "message", columnDefinition = "TEXT")
     String errorMessage;
 }

@@ -52,4 +52,14 @@ public class StudentController {
     public List<Student> getAcceptingStudents() {
         return studentService.getAcceptingStudents();
     }
+    @RequestMapping(value = "{studentId}/accept", method = RequestMethod.PUT)
+    public ResponseEntity<Student> acceptStudent(@PathVariable UUID studentId) throws ResourceNotFoundException {
+        Student acceptedStudent = studentService.acceptStudent(studentId);
+        return ResponseEntity.ok(acceptedStudent);
+    }
+    @RequestMapping(value = "{studentId}/reject", method = RequestMethod.PUT)
+    public ResponseEntity<Student> rejectStudent(@PathVariable UUID studentId) throws ResourceNotFoundException {
+        Student declinedStudent = studentService.rejectStudent(studentId);
+        return ResponseEntity.ok(declinedStudent);
+    }
 }

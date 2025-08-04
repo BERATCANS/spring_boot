@@ -19,7 +19,7 @@ public class Student {
     private String name;
     @Column(name = "surname")
     private String surname;
-    @Column(name = "number")
+    @Column(name = "number", unique = true)
     private Integer number;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,6 +36,5 @@ public class Student {
         this.number = number;
         this.accepted = accepted;
         this.view = view;
-        this.id = UUID.randomUUID();
     }
 }

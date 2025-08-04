@@ -6,7 +6,7 @@ import StudentEdit from './pages/StudentEdit';
 import RegisterPage from "./pages/RegisterPage";
 import RequireAdmin from "./components/RequireAdmin";
 import RequireAuth from "./components/RequireAuth";
-
+import ConfirmPage from "./pages/ConfirmPage";
 function App() {
     return (
         <Routes>
@@ -27,6 +27,12 @@ function App() {
             <Route path="/register" element={
                 <RequireAdmin>
                     <RegisterPage />
+                </RequireAdmin>
+            } />
+
+            <Route path="/confirm" element={
+                <RequireAdmin>
+                    <ConfirmPage />
                 </RequireAdmin>
             } />
         </Routes>
