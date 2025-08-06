@@ -17,9 +17,9 @@ public class CsvFile {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(name = "file_name")
-    String fileName;
+    private String fileName;
     @Column(name = "is_valid")
-    Boolean isValid;
+    private Boolean isValid;
     @Column(name = "message", columnDefinition = "TEXT")
-    String errorMessage;
+    private String errorMessage;
 }

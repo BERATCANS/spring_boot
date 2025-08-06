@@ -64,6 +64,7 @@ class StudentList extends Component {
                     <ButtonGroup>
                         <Button size="sm" color="primary" as={Link} to={"/students/" + student.id}>Edit</Button>
                         <Button size="sm" color="danger" onClick={() => this.remove(student.id)}>Delete</Button>
+                        <Button size="sm" variant="info" as={Link} to={`/students/details/${student.id}`}>Details</Button>
                     </ButtonGroup>
                         )}
                 </td>

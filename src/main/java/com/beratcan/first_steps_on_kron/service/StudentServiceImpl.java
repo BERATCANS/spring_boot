@@ -2,6 +2,8 @@ package com.beratcan.first_steps_on_kron.service;
 
 import com.beratcan.first_steps_on_kron.Repository.CsvFilesRepository;
 import com.beratcan.first_steps_on_kron.Repository.StudentRepository;
+import com.beratcan.first_steps_on_kron.dto.EnrollmentDto;
+import com.beratcan.first_steps_on_kron.dto.StudentDto;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
@@ -24,6 +26,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
@@ -62,6 +65,7 @@ public class StudentServiceImpl implements StudentService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
     }
+
     @Override
     public Student updateStudent(UUID id, Student updatedStudent) throws ResourceNotFoundException {
         Student student = repository.findById(id)
@@ -78,8 +82,7 @@ public class StudentServiceImpl implements StudentService {
             student.setSurname(updatedStudent.getSurname());
 
             return repository.save(student);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("All spaces must be filled!");
         }
     }
@@ -92,6 +95,7 @@ public class StudentServiceImpl implements StudentService {
         repository.deleteById(id);
         return true;
     }
+
     @Override
     public List<Student> searchStudents(String query) {
         // Dummy call to avoid unused method warning
@@ -115,6 +119,7 @@ public class StudentServiceImpl implements StudentService {
 
         return result;
     }
+
     @Override
     @Scheduled(fixedRate = 60000)
     public void importCsv() {
@@ -150,8 +155,7 @@ public class StudentServiceImpl implements StudentService {
         if (isFileValid(path, csvFile)) {
             try {
                 csvFileService.readStudentsFromCsv(path, csvFile);
-            }
-            catch(RuntimeException e){
+            } catch (RuntimeException e) {
                 csvFile.setIsValid(false);
                 csvFile.setErrorMessage(e.getMessage());
             }
@@ -199,10 +203,12 @@ public class StudentServiceImpl implements StudentService {
             logger.error("File could not be renamed: " + path, e);
         }
     }
+
     @Override
     public List<Student> getAcceptingStudents() {
         return repository.findAllByAcceptedFalse();
     }
+
     @Override
     public Student acceptStudent(UUID studentId) throws ResourceNotFoundException {
         Student student = repository.findById(studentId)
@@ -211,6 +217,7 @@ public class StudentServiceImpl implements StudentService {
         student.setAccepted(true);
         return repository.save(student);
     }
+
     @Override
     public Student rejectStudent(UUID studentId) throws ResourceNotFoundException {
         Student student = repository.findById(studentId)
@@ -218,5 +225,38 @@ public class StudentServiceImpl implements StudentService {
 
         student.setView(false);
         return repository.save(student);
+    }
+
+    @Override
+    public StudentDto getStudentDtoById(UUID id) throws ResourceNotFoundException {
+        Student student = getStudentById(id);
+
+        List<EnrollmentDto> enrollmentDtos = student.getEnrollments().stream()
+                .map(enrollment -> new EnrollmentDto(
+                        enrollment.getLesson().getId(),
+                        enrollment.getYear(),
+                        enrollment.getSemester()
+                ))
+                .toList();
+
+        return StudentDto.builder()
+                .id(student.getId())
+                .name(student.getName())
+                .surname(student.getSurname())
+                .number(student.getNumber())
+                .enrollments(enrollmentDtos)
+                .build();
+    }
+    @Override
+    public List<StudentDto> getStudentDtos(List<Student> students) {
+        return students.stream()
+                .map(student -> {
+                    try {
+                        return getStudentDtoById(student.getId());
+                    } catch (ResourceNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -1,19 +1,18 @@
 package com.beratcan.first_steps_on_kron.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 @Table(name = "students")
+@RequiredArgsConstructor
 public class Student {
     @Column(name = "name")
     private String name;
@@ -29,12 +28,6 @@ public class Student {
     private boolean view;
     @Column(name = "accepted")
     private boolean accepted;
-
-    public Student(String name, String surname, Integer number,boolean accepted, boolean view) {
-        this.name = name;
-        this.surname = surname;
-        this.number = number;
-        this.accepted = accepted;
-        this.view = view;
-    }
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<Enrollment> enrollments = new ArrayList<>();
 }

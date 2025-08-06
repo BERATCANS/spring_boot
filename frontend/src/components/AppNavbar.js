@@ -37,7 +37,10 @@ export default class AppNavbar extends Component {
                     <Nav className="me-auto">
                         <Nav.Link as={Link} to="/students">Students</Nav.Link>
                         {role === "ROLE_ADMIN" && (
-                        <Nav.Link as={Link} to="/confirm">Confirm</Nav.Link>
+                            <>
+                                <Nav.Link as={Link} to="/confirm">Confirm</Nav.Link>
+                                <Nav.Link as={Link} to="/lessons">Lessons</Nav.Link>
+                            </>
                         )}
                     </Nav>
                     <Nav className="ms-auto">

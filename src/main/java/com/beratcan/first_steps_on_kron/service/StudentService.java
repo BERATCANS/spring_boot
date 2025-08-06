@@ -1,7 +1,7 @@
 package com.beratcan.first_steps_on_kron.service;
 
+import com.beratcan.first_steps_on_kron.dto.StudentDto;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
-import com.beratcan.first_steps_on_kron.model.CsvFile;
 import com.beratcan.first_steps_on_kron.model.Student;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,4 +28,6 @@ public interface StudentService {
     List<Student> getAcceptingStudents();
     Student acceptStudent(UUID id) throws ResourceNotFoundException;
     Student rejectStudent(UUID id) throws ResourceNotFoundException;
+    StudentDto getStudentDtoById(UUID id) throws ResourceNotFoundException;
+    List<StudentDto> getStudentDtos(List<Student> students);
 }

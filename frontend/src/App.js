@@ -7,6 +7,8 @@ import RegisterPage from "./pages/RegisterPage";
 import RequireAdmin from "./components/RequireAdmin";
 import RequireAuth from "./components/RequireAuth";
 import ConfirmPage from "./pages/ConfirmPage";
+import StudentDetailsPage from "./pages/StudentDetailsPage";
+import LessonPage from "./pages/LessonPage";
 function App() {
     return (
         <Routes>
@@ -33,6 +35,17 @@ function App() {
             <Route path="/confirm" element={
                 <RequireAdmin>
                     <ConfirmPage />
+                </RequireAdmin>
+            } />
+
+            <Route path="/students/details/:studentId" element={
+                <RequireAuth>
+                    <StudentDetailsPage />
+                </RequireAuth>
+            } />
+            <Route path="/lessons" element={
+                <RequireAdmin>
+                    <LessonPage />
                 </RequireAdmin>
             } />
         </Routes>

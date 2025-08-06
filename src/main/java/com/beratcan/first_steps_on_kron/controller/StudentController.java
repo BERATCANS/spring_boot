@@ -1,4 +1,5 @@
 package com.beratcan.first_steps_on_kron.controller;
+import com.beratcan.first_steps_on_kron.dto.StudentDto;
 import com.beratcan.first_steps_on_kron.exception.ResourceNotFoundException;
 import com.beratcan.first_steps_on_kron.model.Student;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import com.beratcan.first_steps_on_kron.service.StudentService;
 import java.util.List;
 import java.util.UUID;
 
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/students")
@@ -16,15 +18,18 @@ import java.util.UUID;
 public class StudentController {
     private final StudentService studentService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public List<Student> listStudents(){
-        return studentService.getAllStudents();
+    @GetMapping
+    public List<StudentDto> listStudents() {
+        List<Student> students = studentService.getAllStudents();
+        return studentService.getStudentDtos(students);
     }
 
-    @RequestMapping(value = "{studentId}", method = RequestMethod.GET)
-    public Student getStudentById(@PathVariable UUID studentId) throws ResourceNotFoundException {
-        return studentService.getStudentById(studentId);
+    @GetMapping("/{studentId}")
+    public ResponseEntity<StudentDto> getStudentById(@PathVariable UUID studentId) throws ResourceNotFoundException {
+        StudentDto dto = studentService.getStudentDtoById(studentId);
+        return ResponseEntity.ok(dto);
     }
+
 
     @RequestMapping(method = RequestMethod.POST)
     public void addStudent(@RequestBody Student student){
@@ -45,12 +50,14 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public List<Student> searchStudents(@RequestParam("query") String query) {
-        return studentService.searchStudents(query);
+    public List<StudentDto> searchStudents(@RequestParam("query") String query) {
+        List<Student> students = studentService.searchStudents(query);
+        return studentService.getStudentDtos(students);
     }
     @RequestMapping(value = "/accepting", method = RequestMethod.GET)
-    public List<Student> getAcceptingStudents() {
-        return studentService.getAcceptingStudents();
+    public List<StudentDto> getAcceptingStudents() {
+        List<Student> students = studentService.getAcceptingStudents();
+        return studentService.getStudentDtos(students);
     }
     @RequestMapping(value = "{studentId}/accept", method = RequestMethod.PUT)
     public ResponseEntity<Student> acceptStudent(@PathVariable UUID studentId) throws ResourceNotFoundException {
